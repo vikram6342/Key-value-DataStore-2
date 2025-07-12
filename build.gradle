@@ -1,0 +1,16 @@
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass = "org.example.Main"
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+}
