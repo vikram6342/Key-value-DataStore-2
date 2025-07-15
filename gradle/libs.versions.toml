@@ -1,0 +1,5 @@
+[versions]
+servlet-api = "2.5"
+
+[libraries]
+servlet-api = { module = "javax.servlet:servlet-api", version.ref = "servlet-api"}
