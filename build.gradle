@@ -1,9 +1,16 @@
 plugins {
     id 'application'
+    id 'war'
 }
+layout.buildDirectory.set(file("${System.getProperty('user.home')}/data/dataStore/build"))
 
 application {
     mainClass = "org.example.Main"
+}
+
+war{
+    archiveFileName = "dataStore.war"
+    destinationDirectory = layout.buildDirectory.dir("war").get().asFile
 }
 
 
@@ -12,5 +19,17 @@ repositories {
 }
 
 dependencies {
-
+    compileOnly libs.servlet.api
 }
+
+tasks.named("war"){
+    doFirst {
+        println "Executing task war...."
+    }
+    doLast {
+        println "War file crated successfully"
+        println "Please check for the war file in ${destinationDirectory.get().asFile.absolutePath}"
+    }
+}
+
+
