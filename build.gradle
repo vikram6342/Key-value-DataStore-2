@@ -2,7 +2,16 @@ plugins {
     id 'application'
     id 'war'
 }
-layout.buildDirectory.set(file("${System.getProperty('user.home')}/data/dataStore/build"))
+
+ext{
+    packageDirectory = file("${System.getProperty('user.home')}/home/dataStore/build")
+    warDirectory = new File(packageDirectory, "war")
+    tomcatDirectory = new File(packageDirectory, "tomcat")
+    tomcatVersion = '9.0.107'
+    tomcatZipUrl = "https://dlcdn.apache.org/tomcat/tomcat-9/v${tomcatVersion}/bin/apache-tomcat-${tomcatVersion}.zip"
+    tomcatZip = file("${layout.buildDirectory.get().asFile}/apache-tomcat-${tomcatVersion}.zip")
+
+}
 
 application {
     mainClass = "org.example.Main"
@@ -10,7 +19,7 @@ application {
 
 war{
     archiveFileName = "dataStore.war"
-    destinationDirectory = layout.buildDirectory.dir("war").get().asFile
+    destinationDirectory = warDirectory
 }
 
 
@@ -29,6 +38,30 @@ tasks.named("war"){
     doLast {
         println "War file crated successfully"
         println "Please check for the war file in ${destinationDirectory.get().asFile.absolutePath}"
+    }
+}
+
+tasks.register("tomcat"){
+    dependsOn tasks.named("war")
+    doLast {
+        if(!tomcatDirectory.exists() || tomcatDirectory.listFiles().length == 0){
+            println "Downloading tomcat zip"
+            new URL(tomcatZipUrl).withInputStream { input ->
+                tomcatZip.withOutputStream { output ->
+                    output << input
+                }
+            }
+
+            println "Unzipping tomcat"
+            copy {
+                from zipTree(tomcatZip)
+                into tomcatDirectory
+            }
+            println "Tomcat downloaded and extracted to ${tomcatDirectory}"
+        }
+        else{
+            println "Tomcat file already exists"
+        }
     }
 }
 
