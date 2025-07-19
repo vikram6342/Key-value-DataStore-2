@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileSystem {
-    private static final String FILE_ROOT_DIR = System.getProperty("user.home") + "/data_store/";
+    private static final String FILE_ROOT_DIR = System.getProperty("user.home") + "/home/dataStore/build/tomcat/apache-tomcat-9.0.107/temp/";
     private static final ConcurrentHashMap<String, ConcurrentHashMap<String, Long>> FILE_INDEX = new ConcurrentHashMap<>();
     private final String FILE_NAME;
     public FileSystem(String fileName) throws Exception

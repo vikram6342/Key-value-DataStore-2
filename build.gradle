@@ -6,7 +6,9 @@ plugins {
 ext{
     packageDirectory = file("${System.getProperty('user.home')}/home/dataStore/build")
     warDirectory = new File(packageDirectory, "war")
+    warFileName = "dataStore.war"
     tomcatDirectory = new File(packageDirectory, "tomcat")
+    tomcatName = "apache-tomcat"
     tomcatVersion = '9.0.107'
     tomcatZipUrl = "https://dlcdn.apache.org/tomcat/tomcat-9/v${tomcatVersion}/bin/apache-tomcat-${tomcatVersion}.zip"
     tomcatZip = file("${layout.buildDirectory.get().asFile}/apache-tomcat-${tomcatVersion}.zip")
@@ -18,7 +20,7 @@ application {
 }
 
 war{
-    archiveFileName = "dataStore.war"
+    archiveFileName = warFileName
     destinationDirectory = warDirectory
 }
 
@@ -45,23 +47,46 @@ tasks.register("tomcat"){
     dependsOn tasks.named("war")
     doLast {
         if(!tomcatDirectory.exists() || tomcatDirectory.listFiles().length == 0){
-            println "Downloading tomcat zip"
+            println "Downloading tomcat zip...."
             new URL(tomcatZipUrl).withInputStream { input ->
                 tomcatZip.withOutputStream { output ->
                     output << input
                 }
             }
 
-            println "Unzipping tomcat"
+            println "Unzipping tomcat....."
             copy {
                 from zipTree(tomcatZip)
                 into tomcatDirectory
             }
+
             println "Tomcat downloaded and extracted to ${tomcatDirectory}"
+
         }
         else{
-            println "Tomcat file already exists"
+            println "Tomcat file already exists."
         }
+
+        println "Deploying war file in tomcat....."
+        copy {
+            from new File(warDirectory, warFileName)
+            into new File(tomcatDirectory, "${tomcatName}-${tomcatVersion}/webapps")
+        }
+        println "WAR file deployed in tomcat successfully"
+
+    }
+}
+
+
+tasks.named("build"){
+    dependsOn tasks.named("tomcat")
+    doLast {
+        println "Adding run.sh file in build directory...."
+        copy {
+            from new File(rootDir, "scripts/run.sh")
+            into new File(packageDirectory, "bin")
+        }
+        println "Build completed successfully"
     }
 }
 
