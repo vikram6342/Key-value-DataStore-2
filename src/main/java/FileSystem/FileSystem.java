@@ -89,8 +89,8 @@ public class FileSystem {
             int keyLenEndIndex = data.indexOf(" ");
             int valueLenEndIndex = data.indexOf(" ", keyLenEndIndex + 1);
             int valueLength = Integer.parseInt(data.substring(keyLenEndIndex + 1, valueLenEndIndex));
-
-            String value = data.substring(valueLenEndIndex + valueLength);
+            int keyLen = Integer.parseInt(data.substring(0, keyLenEndIndex));
+            String value = data.substring(valueLenEndIndex + keyLen + 2);
 
             if(value.isEmpty())
             {
