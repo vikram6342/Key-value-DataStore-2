@@ -1,0 +1,69 @@
+name: Build and Deploy to GCE
+
+on:
+  push:
+    branches:
+      - stable
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      #  Set up Java & Gradle (for building)
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant execute permissions for Gradle
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # Authnticate Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GC_CLOUD_CRED_JSON }}
+
+      #  Set up Google Cloud SDK
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GC_PROJECT_ID }}
+          export_default_credentials: true
+
+      # Start the GCE instance if stopped
+      - name: Start GCE instance
+        run: |
+          gcloud compute instances start ${{ secrets.GC_INSTANCE_NAME }} \
+            --zone=${{ secrets.GC_ZONE_NAME }}
+
+      # Wait until SSH is ready
+      - name: Wait for SSH readiness
+        run: |
+          until gcloud compute ssh ${{ secrets.GC_INSTANCE_NAME }} \
+            --zone=${{ secrets.GC_ZONE_NAME }} --command="echo SSH ready"; do
+            echo "Waiting for instance to be SSH-ready..."
+            sleep 10
+          done
+
+      # Copy build artifact to GCE instance
+      - name: Copy build artifact to GCE instance
+        run: |
+          gcloud compute scp --recurse ~/home \
+            ${{ secrets.GC_INSTANCE_NAME }}:~/ \
+            --zone=${{ secrets.GC_ZONE_NAME }}
+
+      # Step 6: Run deployment script on GCE
+      - name: Deploy on GCE instance
+        run: |
+          gcloud compute ssh ${{ secrets.GC_INSTANCE_NAME }} \
+            --zone=${{ secrets.GC_ZONE_NAME }} \
+            --command="cd ~/home/dataStore/build/bin/ &&  chmod +x ./run.sh && ./run.sh"
