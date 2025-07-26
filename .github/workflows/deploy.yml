@@ -66,4 +66,4 @@ jobs:
         run: |
           gcloud compute ssh ${{ secrets.GC_INSTANCE_NAME }} \
             --zone=${{ secrets.GC_ZONE_NAME }} \
-            --command="cd ~/home/dataStore/build/bin/ && ./run.sh"
+            --command="cd ~/home/dataStore/build/bin/ &&  chmod +x ./run.sh && ./run.sh"
