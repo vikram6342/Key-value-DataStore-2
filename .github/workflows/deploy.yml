@@ -57,7 +57,7 @@ jobs:
       # Copy build artifact to GCE instance
       - name: Copy build artifact to GCE instance
         run: |
-          gcloud compute scp ~/home \
+          gcloud compute scp --recurse ~/home \
             ${{ secrets.GC_INSTANCE_NAME }}:~/ \
             --zone=${{ secrets.GC_ZONE_NAME }}
 
