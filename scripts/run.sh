@@ -15,4 +15,6 @@ export JPDA_ADDRESS=8000
 export JPDA_TRANSPORT=dt_socket
 
 # Start Tomcat with JPDA
-"$TOMCAT_DIR/bin/catalina.sh" jpda run
+"$TOMCAT_DIR/bin/catalina.sh" jpda start >> ~/tomcat.log 2>&1
+
+echo "Tomcat server has started successfully in port 8080 :)"
