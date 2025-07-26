@@ -26,12 +26,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      # Authnticate Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GC_CLOUD_CRED_JSON }}
+
       #  Set up Google Cloud SDK
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GC_PROJECT_ID }}
-          service_account_key: ${{ secrets.GC_CLOUD_CRED_JSON }}
           export_default_credentials: true
 
       # Start the GCE instance if stopped
