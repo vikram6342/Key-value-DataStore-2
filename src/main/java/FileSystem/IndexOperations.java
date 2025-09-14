@@ -1,17 +1,25 @@
 package FileSystem;
 
+import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class IndexOperations {
 
-    protected static void updateIndex(ConcurrentHashMap<String, Long> index, String key, Long position)
+    protected static void updateIndex(ConcurrentHashMap<String, IndexPOJO> indexMap, String key, Long position)
     {
-        index.put(key, position);
+
+        IndexPOJO indexPOJO = new IndexPOJO(FileSystem.ACTIVE_FILE_NAME, position);
+        indexMap.put(key, indexPOJO);
     }
 
-    protected static Long getSeekIndex(ConcurrentHashMap<String, Long> index, String key)
+    protected static Long getSeekIndex(ConcurrentHashMap<String, IndexPOJO> indexMap, String key)
     {
-        return index.getOrDefault(key, -1L);
+        IndexPOJO indexPOJO = indexMap.get(key);
+        if(indexPOJO == null)
+        {
+            return -1L;
+        }
+        return indexPOJO.getOffset();
     }
 
 
