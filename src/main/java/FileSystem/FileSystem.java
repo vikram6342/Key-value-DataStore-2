@@ -10,18 +10,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class FileSystem {
     private static final String FILE_ROOT_DIR = System.getProperty("user.home") + "/home/dataStore/build/tomcat/apache-tomcat-9.0.107/temp/";
-    private static final ConcurrentHashMap<String, ConcurrentHashMap<String, Long>> FILE_INDEX = new ConcurrentHashMap<>();
-    private final String FILE_NAME;
-    public FileSystem(String fileName) throws Exception
+    private static final ConcurrentHashMap<String, IndexPOJO> FILE_INDEX = new ConcurrentHashMap<>();
+    public static String ACTIVE_FILE_NAME = "ACTIVE_FILE.txt";
+    public FileSystem() throws Exception
     {
-        FileSystemValidationUtils.validateFileObjectCreation(fileName);
-        File file = new File(FileSystem.FILE_ROOT_DIR + fileName);
-        FILE_NAME = FileSystem.FILE_ROOT_DIR + fileName;
+        File file = new File(FileSystem.FILE_ROOT_DIR + ACTIVE_FILE_NAME);
 
         if(file.createNewFile())
         {
-            ConcurrentHashMap<String, Long> DATA_INDEX = new ConcurrentHashMap<>();
-            FILE_INDEX.put(FILE_NAME, DATA_INDEX);
             System.out.println("File does not exist so new file created");
         }
         else
@@ -37,7 +33,7 @@ public class FileSystem {
         boolean fileWritten = false;
         keyLength = key.length();
         valueLength = value.length();
-        File file = new File(FILE_NAME);
+        File file = new File(FileSystem.FILE_ROOT_DIR + ACTIVE_FILE_NAME);
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw"))
         {
             FileChannel fileChannel = randomAccessFile.getChannel();
@@ -49,8 +45,8 @@ public class FileSystem {
             }
             long position = fileChannel.size();
             fileChannel.position(position);
-            IndexOperations.updateIndex(FILE_INDEX.get(FILE_NAME), key, position);
-            ByteBuffer bufferData = ByteBuffer.wrap(String.format("%d %d %s %s\n", keyLength, valueLength, key, value).getBytes(StandardCharsets.UTF_8));
+            IndexOperations.updateIndex(FILE_INDEX, key, position);
+            ByteBuffer bufferData = ByteBuffer.wrap(String.format("%d %d %s %s %d\n", keyLength, valueLength, key, value, 0).getBytes(StandardCharsets.UTF_8));
             int bytesWritten = fileChannel.write(bufferData);
             System.out.println("Written bytes of size" + bytesWritten);
             fileWritten = true;
@@ -59,7 +55,6 @@ public class FileSystem {
         {
             System.out.println("Exception occurred during writing in file" + e);
         }
-        FILE_INDEX.get(FILE_NAME).forEach((MapKey, MapValue) -> System.out.println(MapKey + " = " + MapValue));
 
         return fileWritten;
 
@@ -75,10 +70,10 @@ public class FileSystem {
         {
             throw new Exception("Invalid key size");
         }
-        File file = new File(FILE_NAME);
+        File file = new File(FileSystem.FILE_ROOT_DIR + FileSystem.ACTIVE_FILE_NAME);
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r"))
         {
-            Long seekIndex = IndexOperations.getSeekIndex(FILE_INDEX.get(FILE_NAME), key);
+            Long seekIndex = IndexOperations.getSeekIndex(FILE_INDEX, key);
             if(seekIndex == -1)
             {
                 System.out.println("The given key does not exist please check the key");
@@ -90,7 +85,7 @@ public class FileSystem {
             int valueLenEndIndex = data.indexOf(" ", keyLenEndIndex + 1);
             int valueLength = Integer.parseInt(data.substring(keyLenEndIndex + 1, valueLenEndIndex));
             int keyLen = Integer.parseInt(data.substring(0, keyLenEndIndex));
-            String value = data.substring(valueLenEndIndex + keyLen + 2);
+            String value = data.substring(valueLenEndIndex + keyLen + 2, valueLenEndIndex + keyLen + valueLength + 2);
 
             if(value.isEmpty())
             {
@@ -102,7 +97,7 @@ public class FileSystem {
         catch(Exception e)
         {
             System.out.println("Exception occurred" + e);
-            return "Internal Error occurred";
+            throw e;
         }
     }
 

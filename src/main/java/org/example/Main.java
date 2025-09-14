@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
         try
         {
-            FileSystem fileSystem = new FileSystem("vikram.txt");
+            FileSystem fileSystem = new FileSystem();
             fileSystem.writeData("key1", "value1");
             fileSystem.writeData("key2", "value2");
             System.out.println("Read data from file : " + fileSystem.getData("key2"));

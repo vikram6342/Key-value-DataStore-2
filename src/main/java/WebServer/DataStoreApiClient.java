@@ -13,19 +13,17 @@ public class DataStoreApiClient extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res)
     {
         String key = req.getParameter("key");
-        String fileName = req.getParameter("fileName");
         /*
         To do
-        1. Need to move the file name logic it should be in header
-        2. Need to check whether the user who made the req have access to that particular file
+            Support for multi user data base model // Hope i will do it
          */
         PrintWriter writer = null;
         try
         {
-            FileSystem fileSystem = new FileSystem(fileName);
+            FileSystem fileSystem = new FileSystem();
             writer = res.getWriter();
             String value = fileSystem.getData(key);
-            writer.println(value);
+            writer.print(value);
 
         }
         catch (Exception e)
@@ -47,12 +45,11 @@ public class DataStoreApiClient extends HttpServlet {
     {
         String key = req.getParameter("key");
         String value = req.getParameter("value");
-        String fileName = req.getParameter("fileName");
         PrintWriter writer = null;
         try
         {
             writer = res.getWriter();
-            FileSystem fileSystem = new FileSystem(fileName);
+            FileSystem fileSystem = new FileSystem();
             fileSystem.writeData(key, value);
             writer.println("Successfully written the key value pairs!");
         }
