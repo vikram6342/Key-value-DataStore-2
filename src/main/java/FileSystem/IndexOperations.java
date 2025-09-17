@@ -8,7 +8,7 @@ public class IndexOperations {
     protected static void updateIndex(ConcurrentHashMap<String, IndexPOJO> indexMap, String key, Long position)
     {
 
-        IndexPOJO indexPOJO = new IndexPOJO(FileSystem.ACTIVE_FILE_NAME, position);
+        IndexPOJO indexPOJO = new IndexPOJO(FileSystem.getActiveFileName(), position);
         indexMap.put(key, indexPOJO);
     }
 

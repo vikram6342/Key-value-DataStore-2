@@ -1,5 +1,7 @@
 package FileSystem;
 
+import Constants.FileConstants;
+import ContextUtil.ContextUtil;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -8,13 +10,13 @@ import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class FileSystem {
-    private static final String FILE_ROOT_DIR = System.getProperty("user.home") + "/home/dataStore/build/tomcat/apache-tomcat-9.0.107/temp/";
+public class FileSystem
+{
     private static final ConcurrentHashMap<String, IndexPOJO> FILE_INDEX = new ConcurrentHashMap<>();
-    public static String ACTIVE_FILE_NAME = "ACTIVE_FILE.txt";
+
     public FileSystem() throws Exception
     {
-        File file = new File(FileSystem.FILE_ROOT_DIR + ACTIVE_FILE_NAME);
+        File file = new File( FileSystem.getActiveFileName());
 
         if(file.createNewFile())
         {
@@ -33,7 +35,7 @@ public class FileSystem {
         boolean fileWritten = false;
         keyLength = key.length();
         valueLength = value.length();
-        File file = new File(FileSystem.FILE_ROOT_DIR + ACTIVE_FILE_NAME);
+        File file = new File(FileSystem.getActiveFileName());
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw"))
         {
             FileChannel fileChannel = randomAccessFile.getChannel();
@@ -70,7 +72,7 @@ public class FileSystem {
         {
             throw new Exception("Invalid key size");
         }
-        File file = new File(FileSystem.FILE_ROOT_DIR + FileSystem.ACTIVE_FILE_NAME);
+        File file = new File(FileSystem.getActiveFileName());
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r"))
         {
             Long seekIndex = IndexOperations.getSeekIndex(FILE_INDEX, key);
@@ -81,11 +83,7 @@ public class FileSystem {
             }
             randomAccessFile.seek(seekIndex);
             String data = randomAccessFile.readLine();
-            int keyLenEndIndex = data.indexOf(" ");
-            int valueLenEndIndex = data.indexOf(" ", keyLenEndIndex + 1);
-            int valueLength = Integer.parseInt(data.substring(keyLenEndIndex + 1, valueLenEndIndex));
-            int keyLen = Integer.parseInt(data.substring(0, keyLenEndIndex));
-            String value = data.substring(valueLenEndIndex + keyLen + 2, valueLenEndIndex + keyLen + valueLength + 2);
+            String value = FileSystemUtils.getValue(data);
 
             if(value.isEmpty())
             {
@@ -101,5 +99,9 @@ public class FileSystem {
         }
     }
 
+    public static String getActiveFileName()
+    {
+        return String.valueOf(ContextUtil.getContextAttribute(FileConstants.ACTIVE_FILE_KEY));
+    }
 
 }
