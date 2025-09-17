@@ -19,5 +19,7 @@
         <servlet-name>DataStoreApiClient</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
-
+    <listener>
+        <listener-class>listeners.IndexInitializerListener</listener-class>
+    </listener>
 </web-app>
